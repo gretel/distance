@@ -1,0 +1,9 @@
+---
+- name: varnish-start
+  service: name=varnish start=started
+
+- name: varnish-restart
+  service: name=varnish state=restarted
+
+- name: varnish-reload
+  service: name=varnish state=reloaded

@@ -1,0 +1,26 @@
+---
+yum_update: True
+yum_cleanup: True
+
+absent_packages:
+  - ruby
+  - rubygems
+present_packages:
+  - bash
+  - ca-certificates
+  - curl
+  - autoconf
+  - automake
+  - libtool
+  - bison
+  - make
+  - patch
+  - gcc-c++
+  - readline
+  - readline-devel
+  - zlib
+  - zlib-devel
+  - libyaml-devel
+  - libffi-devel
+  - openssl-devel
+  - git

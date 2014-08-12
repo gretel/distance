@@ -1,0 +1,22 @@
+---
+- hosts: "{{ selected_hosts | default('ami') }}"
+
+  gather_facts: no
+
+  vars_files:
+    - ./vars/project.yml
+
+  pre_tasks:
+    - shell: echo "running" | wall
+
+  roles:
+    - { role: packages, tags: packages }
+    - { role: rubyry, tags: rubyry }
+    - { role: rubybuild, tags: rubybuild }
+    - { role: rubygems, tags: rubygems }
+    - { role: deploy, tags: deploy }
+    - { role: github, tags: github }
+    - { role: varnish, tags: varnish }
+
+  post_tasks:
+    - shell: echo "done" | wall

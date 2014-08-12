@@ -1,0 +1,9 @@
+---
+- name: clone repository
+  git: repo={{ project_repo }} dest={{ project_prefix }}
+  tags: deploy
+
+- name: install dependencies
+  command: "bundle install --deployment --without=development,test --path=vendor/bundle chdir={{ project_prefix }}"
+  environment:
+    RACK_ENV: production

@@ -1,0 +1,40 @@
+---
+- name: varnish | query "{{ varnish_rpm }}"
+  shell: rpm --quiet -q varnish
+  register: _varnish_installed
+  changed_when: _varnish_installed.stderr != ''
+  failed_when: _varnish_installed.rc == 127
+
+- name: varnish | add "{{ varnish_rpm }}"
+  shell: rpm --quiet --nosignature -i "{{ varnish_rpm }}"
+  sudo: True
+  register: _varnish_rpm
+  changed_when: not _varnish_rpm.stderr.find('is already installed')
+  failed_when: _varnish_rpm.rc > 1 or _varnish_rpm.rc < 1
+
+- name: varnish | yum install
+  yum: name=varnish state=latest
+  sudo: True
+  register: _varnish_yum
+  failed_when: _varnish_yum.rc != 0
+
+- name: varnish | check
+  shell: varnishd -V
+  #sudo: True
+  register: _varnish_check
+  changed_when: _varnish_check.rc != 0
+  failed_when: not _varnish_check.stderr.find('Varnish Software AS')
+
+- name: varnish | configuration template
+  template:
+    src=$repository_basedir/varnish/templates/varnish.default.j2
+    dest=/etc/default/varnish
+    owner=root group=root mode=0644
+  notify:
+    - varnish-restart
+  when: False
+
+- name: varnish | ensure daemon gets started
+  service: name=varnish state=started
+  when: False
+

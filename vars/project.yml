@@ -1,0 +1,11 @@
+---
+#project_name: dcie-tube
+
+project_repo: https://github.com/gretel/dcie-tube.git
+project_prefix: /home/ec2-user/deploy
+
+ruby_version: 2.1.2
+
+tmp_prefix: /home/ec2-user/.tmp
+local_prefix: /home/ec2-user/.local
+cache_prefix: /home/ec2-user/.cache

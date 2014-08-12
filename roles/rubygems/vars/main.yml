@@ -1,0 +1,10 @@
+---
+gem_wipe: False
+gem_update: False
+gem_cleanup: False
+gem_wellness: False
+gem_update_flags: --env-shebang --no-document --wrappers
+gem_install_flags: --env-shebang --no-document --wrappers
+
+#install_gems:
+#  - bundler

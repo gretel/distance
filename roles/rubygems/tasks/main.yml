@@ -1,0 +1,61 @@
+---
+- name: gems | check rubygems version
+  shell: ry exec {{ ruby_version }} gem environment | grep 'RUBY VERSION:'
+  register: _rubygems_check
+  changed_when: not _rubygems_check.stdout.find("{{ ruby_version }}") > 0
+  failed_when: _rubygems_check.rc != 0
+
+- debug: msg="{{ _rubygems_check.stdout }}"
+  when: not _rubygems_check|failed
+
+- pause: prompt="Sure you wanne WIPE ALL GEMS?!" seconds=10
+  when: gem_wipe == True
+
+- name: gems | wipe all gems
+  shell: for i in `ry exec {{ ruby_version }} gem list --no-versions`; do ry exec {{ ruby_version }} gem uninstall -aIx $i; done
+  register: _rubygems_wipe
+  changed_when: _rubygems_wipe.stdout == ""
+  ignore_errors: true
+  when: gem_wipe == True
+
+- name: gems | update systen
+  shell: yes | ry exec {{ ruby_version }} gem update --system {{ gem_update_flags }}
+  register: _rubygems_update_system
+  changed_when: _rubygems_update_system.stdout != 'Latest version currently installed. Aborting.'
+  failed_when: _rubygems_update_system.rc != 0
+  when: gem_update == True
+
+- name: gems | update existing gems
+  shell: yes | ry exec {{ ruby_version }} gem update {{ gem_update_flags }}
+  register: _rubygems_update
+  changed_when: not _rubygems_update.stdout.find('Nothing to update') > 0
+  failed_when: _rubygems_update.rc != 0
+  when: gem_update == True
+
+- name: gems | install missing gems
+  shell: yes | ry exec {{ ruby_version }} gem install {{ item }} {{ gem_install_flags }}
+  #gem: name={{ item }} state=latest
+  with_items: "{{ install_gems | mandatory }}"
+  register: _rubygems_install
+  changed_when: _rubygems_install.stdout.find('Successfully installed') > 0
+  failed_when: _rubygems_install.rc != 0
+
+- name: gems | re-run generation of executable wrappers for gems
+  shell: ry exec {{ ruby_version }} gem regenerate_binstubs -V
+  changed_when: False
+  when: gem_wellness == True
+
+- name: gems | restores installed gems to pristine condition from files located in the gem cache
+  shell: ry exec {{ ruby_version }} gem pristine --all --extensions --env-shebang
+  changed_when: False
+  when: gem_wellness == True
+
+- name: gems | cleanup
+  shell: ry exec {{ ruby_version }} gem cleanup
+  register: _rubygems_cleanup
+  changed_when: "_rubygems_cleanup.stdout != 'Cleaning up installed gems...\nClean Up Complete'"
+  when: gem_wellness == True
+
+#- name: gems | re-run generation of environment wrappers for gems
+#  shell: ry exec {{ ruby_version }} gem wrappers regenerate
+#  when: gem_wellness == True

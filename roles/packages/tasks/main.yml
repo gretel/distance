@@ -1,0 +1,45 @@
+---
+- name: packages | remove packages
+  yum: name={{ item }} state=absent
+  with_items: "{{ absent_packages | mandatory }}"
+  sudo: True
+  register: _yum_remove
+
+- name: packages | validate package removal list
+  fail:
+    msg: "invalid state: {{ item }}"
+  when: not item.find('is not installed')
+  with_items: _yum_remove.results
+
+- name: packages | upgrade
+  yum: name=* state=latest
+  sudo: True
+  register: _yum_upgrade
+  changed_when: _yum_upgrade.results.0 != "All packages up to date"
+  when: yum_update == True
+
+- name: packages | install missing
+  yum: name={{ item }} state=present
+  with_items: "{{ present_packages | mandatory }}"
+  sudo: True
+  register: _yum_install
+
+- name: packages | validate installad packages
+  fail:
+    msg: "invalid state: {{ item }}"
+  when: not item.find('is already installed')
+  with_items: _yum_install.results
+
+- name: packages | autoremove
+  shell: yum -q -y autoremove
+  sudo: True
+  register: _yum_autoremove
+  changed_when: _yum_autoremove.stdout != ""
+  when: yum_cleanup == True
+
+- name: packages | clean all
+  shell: yum -q -y clean all
+  sudo: True
+  register: _yum_clean
+  changed_when: _yum_autoremove.stdout != ""
+  when: yum_cleanup == True
