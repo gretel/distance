@@ -13,7 +13,7 @@
   when: _ry_install|failed
 
 - name: ry | adjust PATH variable
-  lineinfile: dest=~/.bashrc line='export PATH={{ local_prefix }}/bin:${PATH}'
+  lineinfile: "dest=~/.bashrc line='export PATH={{ local_prefix }}/bin:${PATH}'"
   #when: _ry_install|changed
   tags: debug
 

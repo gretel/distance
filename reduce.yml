@@ -10,6 +10,7 @@
     - shell: echo "running" | wall
 
   roles:
+    - { role: harden, tags: harden }
     - { role: packages, tags: packages }
     - { role: rubyry, tags: rubyry }
     - { role: rubybuild, tags: rubybuild }

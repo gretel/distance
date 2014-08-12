@@ -6,8 +6,9 @@ absent_packages:
   - ruby
   - rubygems
 present_packages:
-  - bash
   - ca-certificates
+  - bash
+  - sudo
   - curl
   - autoconf
   - automake

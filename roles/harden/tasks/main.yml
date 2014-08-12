@@ -1,0 +1,46 @@
+---
+- name: harden | remove users
+  user: name={{ item }} state=absent
+  with_items:
+    - games
+    - gnats
+    - gopher
+    - irc
+    - list
+    - news
+    - proxy
+    - uucp
+
+- name: harden | disable logins
+  user: name={{ item }} shell=/usr/sbin/nologin
+  with_items:
+    - daemon
+    - bin
+    - lp
+    - sys
+    - man
+    - mail
+    - backup
+    - nobody
+    - libuuid
+
+- name: harden | remove groups
+  group: name={{ item }} state=absent
+  with_items:
+    - games
+    - gnats
+    - gopher
+    - irc
+    - src
+    - list
+    - news
+    - proxy
+    - uucp
+
+- name: harden | root directory permissions
+  file: dest=/root state=directory mode=700
+
+- name: harden | tmpfs options
+  mount: name=/dev/shm src=tmpfs fstype=tmpfs opts=rw,noatime,nosuid,nodev,noexec state=present
+  tags: tmpfs
+
