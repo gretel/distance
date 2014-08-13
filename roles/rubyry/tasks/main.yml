@@ -1,12 +1,13 @@
 ---
 - name: ry | cloning git repositoy "{{ ry_repo }}"'
-  git: repo="{{ ry_repo }}" dest="{{ tmp_prefix }}/ry"
+  git: repo="{{ ry_repo }}" dest="{{ tmp_prefix }}/ry" version=HEAD
   register: _ry_clone
+  tags: git
 
 - name: ry | install to {{ local_prefix }}
   shell: cd {{ tmp_prefix }}/ry && PREFIX={{ local_prefix }} make install
   register: _ry_install
-  failed_when: _ry_install.rc != 0
+  #failed_when: "_ry_install.rc != 0"
   when: _ry_clone|changed
 
 - debug: msg="{{ _ry_install.stderr }}"
@@ -15,7 +16,6 @@
 - name: ry | adjust PATH variable
   lineinfile: "dest=~/.bashrc line='export PATH={{ local_prefix }}/bin:${PATH}'"
   #when: _ry_install|changed
-  tags: debug
 
 - name: ry | enable login script
   lineinfile: "dest=~/.bashrc line='eval $(ry setup)'"
@@ -25,8 +25,5 @@
   shell: ry -V
   register: _ry_check
   changed_when: False
-  failed_when: _ry_check.stdout == ''
+  failed_when: "_ry_check.stdout == ''"
 
-- name: ry | ready
-  debug: msg="version {{ _ry_check.stdout }}"
-  when: not _ry_check|failed

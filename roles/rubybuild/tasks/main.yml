@@ -1,7 +1,8 @@
 ---
 - name: ruby-build | cloning git repositoy "{{ ruby_build_repo }}"'
-  git: repo="{{ ruby_build_repo }}" dest="{{ tmp_prefix }}/ruby-build"
+  git: repo="{{ ruby_build_repo }}" dest="{{ tmp_prefix }}/ruby-build" version=HEAD
   register: _ruby_build_clone
+  tags: git
 
 - name: ruby-build | install to {{ local_prefix }}
   shell: cd {{ tmp_prefix }}/ruby-build && PREFIX={{ local_prefix }} ./install.sh
@@ -10,8 +11,7 @@
   when: _ruby_build_clone|changed
 
 - name: ruby-build | create local cache directory # todo move
-  shell: mkdir -vp {{ cache_prefix }}
-  changed_when: False
+  file: path={{ cache_prefix }} state=directory
 
 - name: ruby-build | export varibale to enable cache
   lineinfile: dest=~/.bashrc line='export RUBY_BUILD_CACHE_PATH={{ cache_prefix }}/.ruby-build-cache'
@@ -34,9 +34,6 @@
   register: _ruby_use
   changed_when: False
   failed_when: _ruby_use.rc != 0
-
-- debug: msg="version {{ _ruby_use.stdout }}"
-  when: not _ruby_use|failed
 
 - name: ruby-build | validate ruby version_ruby_use
   shell: ry exec {{ ruby_version }} ruby -v

@@ -1,9 +1,17 @@
 ---
-- name: clone repository
-  git: repo={{ project_repo }} dest={{ project_prefix }}
-  tags: deploy
+- name: deploy | clone repository
+  git: repo={{ project_repo }} dest={{ project_prefix }} version=HEAD
+  tags: git
 
-- name: install dependencies
+- name: deploy | check bundle
+  command: "bundle check --no-color --verbose chdir={{ project_prefix }}"
+  register: _bundler_check
+  tags: bundler
+
+- name: deploy | run bundler
   command: "bundle install --deployment --without=development,test --path=vendor/bundle chdir={{ project_prefix }}"
   environment:
     RACK_ENV: production
+  register: _bundler
+  changed_when: _bundler.stdout.find('It was installed into')
+  when: False

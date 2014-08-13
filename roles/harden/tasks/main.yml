@@ -1,5 +1,6 @@
 ---
 - name: harden | remove users
+  sudo: true
   user: name={{ item }} state=absent
   with_items:
     - games
@@ -13,6 +14,7 @@
 
 - name: harden | disable logins
   user: name={{ item }} shell=/usr/sbin/nologin
+  sudo: true
   with_items:
     - daemon
     - bin
@@ -25,6 +27,7 @@
     - libuuid
 
 - name: harden | remove groups
+  sudo: true
   group: name={{ item }} state=absent
   with_items:
     - games
@@ -38,9 +41,26 @@
     - uucp
 
 - name: harden | root directory permissions
+  sudo: true
   file: dest=/root state=directory mode=700
 
 - name: harden | tmpfs options
+  sudo: true
   mount: name=/dev/shm src=tmpfs fstype=tmpfs opts=rw,noatime,nosuid,nodev,noexec state=present
   tags: tmpfs
+
+- name: harden | setting yum repo priority
+  sudo: true
+  ini_file: dest=/etc/yum/pluginconf.d/priorities.conf
+            section=main
+            option=enabled
+            value=1
+
+#- name: varnish | disable priorities
+#  lineinfile: dest=/etc/yum/pluginconf.d/priorities.conf
+#              state=present
+#              backrefs=yes
+#              regexp='^#?enabled = 1'
+#              line='enabled = 0'
+#  sudo: true
 

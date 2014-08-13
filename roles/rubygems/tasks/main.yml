@@ -5,9 +5,6 @@
   changed_when: not _rubygems_check.stdout.find("{{ ruby_version }}") > 0
   failed_when: _rubygems_check.rc != 0
 
-- debug: msg="{{ _rubygems_check.stdout }}"
-  when: not _rubygems_check|failed
-
 - pause: prompt="Sure you wanne WIPE ALL GEMS?!" seconds=10
   when: gem_wipe == True
 
@@ -18,12 +15,13 @@
   ignore_errors: true
   when: gem_wipe == True
 
-- name: gems | update systen
+- name: gems | update system
   shell: yes | ry exec {{ ruby_version }} gem update --system {{ gem_update_flags }}
   register: _rubygems_update_system
   changed_when: _rubygems_update_system.stdout != 'Latest version currently installed. Aborting.'
   failed_when: _rubygems_update_system.rc != 0
   when: gem_update == True
+  tags: upgrade
 
 - name: gems | update existing gems
   shell: yes | ry exec {{ ruby_version }} gem update {{ gem_update_flags }}
@@ -31,11 +29,12 @@
   changed_when: not _rubygems_update.stdout.find('Nothing to update') > 0
   failed_when: _rubygems_update.rc != 0
   when: gem_update == True
+  tags: upgrade
 
 - name: gems | install missing gems
   shell: yes | ry exec {{ ruby_version }} gem install {{ item }} {{ gem_install_flags }}
   #gem: name={{ item }} state=latest
-  with_items: "{{ install_gems | mandatory }}"
+  with_items: "{{ install_gems }}"
   register: _rubygems_install
   changed_when: _rubygems_install.stdout.find('Successfully installed') > 0
   failed_when: _rubygems_install.rc != 0

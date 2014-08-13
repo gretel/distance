@@ -2,15 +2,16 @@
 - name: github | check if ever connected via ssh
   shell: ssh-keygen -F github.com
   register: _github_known
-  changed_when: _github_known.stdout == ''
+  changed_when: "not _github_known.stdout | search('github.com')"
+  tags: github
 
 - name: remove github.com from known host
   shell: ssh-keygen -R github.com
   #when: not _github_known.stdout.find('github.com')
-  when: not _github_known.stdout | match("github.com")
+  when: _github_known|changed
 
 - name: ensure github.com in known host
   shell: ssh-keyscan -H github.com > ~/.ssh/known_hosts
   register: _github_keyscan
-  failed_when: _github_keyscan.rc != 0
-  when: not _github_known.stdout.find('github.com') > 0
+  failed_when: "_github_keyscan.rc != 0"
+  when: _github_known|changed

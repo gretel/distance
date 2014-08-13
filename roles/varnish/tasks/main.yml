@@ -1,29 +1,34 @@
 ---
-- name: varnish | query "{{ varnish_rpm }}"
-  shell: rpm --quiet -q varnish
-  register: _varnish_installed
-  changed_when: _varnish_installed.stderr != ''
-  failed_when: _varnish_installed.rc == 127
+- name: varnish | add repository file
+  copy: src=varnish.repo
+        dest=/etc/yum.repos.d/
+        owner=root group=root mode=0644
+  sudo: true
 
-- name: varnish | add "{{ varnish_rpm }}"
-  shell: rpm --quiet --nosignature -i "{{ varnish_rpm }}"
+#- name: varnish | enable repository
+#  ini_file: dest=/etc/yum.repos.d/varnish.repo
+#            section=varnish-4.0
+#            option=enabled
+#            value=1
+#  sudo: true
+
+- name: varnish | erase
+  yum: name=varnish-* state=absent
   sudo: True
-  register: _varnish_rpm
-  changed_when: not _varnish_rpm.stderr.find('is already installed')
-  failed_when: _varnish_rpm.rc > 1 or _varnish_rpm.rc < 1
+  register: _yum_erase
+  tags: remove
 
-- name: varnish | yum install
+- name: varnish | install missing
   yum: name=varnish state=latest
   sudo: True
-  register: _varnish_yum
-  failed_when: _varnish_yum.rc != 0
+  register: _yum_install
 
 - name: varnish | check
   shell: varnishd -V
-  #sudo: True
+  environment:
+    PATH: /usr/sbin
   register: _varnish_check
-  changed_when: _varnish_check.rc != 0
-  failed_when: not _varnish_check.stderr.find('Varnish Software AS')
+  failed_when: not _varnish_check.stderr.find('varnish-4')
 
 - name: varnish | configuration template
   template:
