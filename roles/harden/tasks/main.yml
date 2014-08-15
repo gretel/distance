@@ -1,6 +1,5 @@
 ---
 - name: remove users
-  sudo: true
   user: name={{ item }} state=absent
   with_items:
     - games
@@ -14,7 +13,6 @@
 
 - name: disable logins
   user: name={{ item }} shell=/usr/sbin/nologin
-  sudo: true
   with_items:
     - daemon
     - bin
@@ -27,7 +25,6 @@
     - libuuid
 
 - name: remove groups
-  sudo: true
   group: name={{ item }} state=absent
   with_items:
     - games
@@ -41,20 +38,18 @@
     - uucp
 
 - name: root directory permissions
-  sudo: true
   file: dest=/root state=directory mode=700
 
 - name: tmpfs options
-  sudo: true
   mount: name=/dev/shm src=tmpfs fstype=tmpfs opts=rw,noatime,nosuid,nodev,noexec state=present
   tags: tmpfs
 
 - name: setting yum repo priority
-  sudo: true
   ini_file: dest=/etc/yum/pluginconf.d/priorities.conf
             section=main
             option=enabled
             value=1
+  when: ansible_pkg_mgr == 'yum'
 
 #- name: varnish | disable priorities
 #  lineinfile: dest=/etc/yum/pluginconf.d/priorities.conf

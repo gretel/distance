@@ -1,41 +1,41 @@
 ---
-- name: ruby-build | cloning git repositoy "{{ ruby_build_repo }}"'
+- name: cloning git repositoy "{{ ruby_build_repo }}"'
   git: repo="{{ ruby_build_repo }}" dest="{{ tmp_prefix }}/ruby-build" version=HEAD
   register: _ruby_build_clone
   tags: git
 
-- name: ruby-build | install to {{ local_prefix }}
+- name: install to {{ local_prefix }}
   shell: cd {{ tmp_prefix }}/ruby-build && PREFIX={{ local_prefix }} ./install.sh
   register: _ruby_build_install
   failed_when: _ruby_build_install.rc != 0
   when: _ruby_build_clone|changed
 
-- name: ruby-build | create local cache directory # todo move
+- name: create local cache directory # todo move
   file: path={{ cache_prefix }} state=directory
 
-- name: ruby-build | export varibale to enable cache
+- name: export varibale to enable cache
   lineinfile: dest=~/.bashrc line='export RUBY_BUILD_CACHE_PATH={{ cache_prefix }}/.ruby-build-cache'
   when: not "{{ lookup('env','RUBY_BUILD_CACHE_PATH') }}"
 
-- name: ruby-build | check if requested ruby version is already installed
+- name: check if requested ruby version is already installed
   shell: ry rubies
   register: _ruby_version_installed
   changed_when: not _ruby_version_installed.stdout.find("{{ ruby_version }}")
   failed_when: _ruby_version_installed.rc != 0
 
-- name: ruby-build | install ruby {{ ruby_version }}
+- name: install ruby {{ ruby_version }}
   shell: ry install "{{ ruby_version }}"
   register: _ruby_install
   failed_when: _ruby_install.rc != 0
   when: _ruby_version_installed|changed
 
-- name: ruby-build | set default ruby version to use
+- name: set default ruby version to use
   shell: ry use {{ ruby_version }}
   register: _ruby_use
   changed_when: False
   failed_when: _ruby_use.rc != 0
 
-- name: ruby-build | validate ruby version_ruby_use
+- name: validate ruby version_ruby_use
   shell: ry exec {{ ruby_version }} ruby -v
   register: _ruby_check
   changed_when: False

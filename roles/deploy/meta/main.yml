@@ -1,4 +1,4 @@
 ---
-#dependencies:
-#- { role: rubygems }
-#- { role: github }
+dependencies:
+- { role: rubygems }
+- { role: github }

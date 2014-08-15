@@ -15,13 +15,9 @@ MEMLOCK=128
 NPROCS=1024
 
 # Set this to 1 to make init script reload try to switch vcl without restart.
-# To make this work, you need to set the following variables
-# explicit: VARNISH_VCL_CONF, VARNISH_ADMIN_LISTEN_ADDRESS,
-# VARNISH_ADMIN_LISTEN_PORT, VARNISH_SECRET_FILE, or in short,
-# use Alternative 3, Advanced configuration, below
 RELOAD_VCL=0
 
-DAEMON_OPTS="-a :80 \
+DAEMON_OPTS="-a {{ ansible_default_ipv4.address | default ('') }}:80 \
 	-b 127.0.0.1:9292 \
 	-n reverse \
 	-u varnish -g varnish \

@@ -1,8 +1,7 @@
 ---
 - name: remove packages
   yum: name={{ item }} state=absent
-  with_items: "{{ absent_mandatory }}"
-  sudo: True
+  with_items: "{{ absent_packages }}"
   register: _yum_remove
 
 - name: validate package removal list
@@ -11,16 +10,14 @@
   when: "not item.find('is not installed')"
   with_items: _yum_remove.results
 
-- name: upgrade
+- name: update all
   yum: name=* state=latest
-  sudo: True
   register: _yum_upgrade
   tags: upgrade
 
 - name: install missing
   yum: name={{ item }} state=present
-  with_items: "{{ present_mandatory }}"
-  sudo: True
+  with_items: "{{ present_packages }}"
   register: _yum_install
 
 - name: validate installad packages
@@ -30,15 +27,15 @@
   with_items: _yum_install.results
 
 - name: autoremove
-  command: yum -q -y autoremove
-  sudo: True
+  shell: yum -q -y autoremove
+  sudo: true
   register: _yum_autoremove
   changed_when: "_yum_autoremove.stdout != ''"
   when: "yum_cleanup == True"
 
 - name: clean all
-  command: yum -q -y clean all
-  sudo: True
+  shell: yum -q -y clean all
+  sudo: true
   register: _yum_clean
   changed_when: "_yum_clean.stdout != ''"
   when: "yum_cleanup == True"

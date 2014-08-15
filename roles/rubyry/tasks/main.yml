@@ -1,31 +1,38 @@
 ---
-- name: ry | cloning git repositoy "{{ ry_repo }}"'
+- debug: var="_rubyry_success"
+
+- name: git clone "{{ ry_repo }}"'
   git: repo={{ ry_repo }} dest={{ tmp_prefix }}/ry version=HEAD
   register: _ry_clone
   tags: git
 
-- name: ry | install to {{ local_prefix }}
+- name: install to "{{ local_prefix }}"
   shell: cd {{ tmp_prefix }}/ry && PREFIX={{ local_prefix }} make install
   register: _ry_install
   when: _ry_clone|changed
 
 # priviliged bluepill requires ruby available for root
-- name: ry | adjust path for root
+- name: adjust path for root
   lineinfile: "dest=/root/.bashrc line='export PATH={{ local_prefix }}/bin:${PATH}'"
   sudo: true
 
-- name: ry | adjust path for current user
+- name: adjust path for current user
   lineinfile: "dest=~/.bashrc line='export PATH={{ local_prefix }}/bin:${PATH}'"
 
-- name: ry | enable ry for root
+- name: enable ry for root
   lineinfile: "dest=/root/.bashrc line='eval $(ry setup)'"
   sudo: true
 
-- name: ry | enable login script for current user
+- name: enable login script for current user
   lineinfile: "dest=~/.bashrc line='eval $(ry setup)'"
 
-- name: ry | check version as current user
+- name: check version as current user
   shell: ry -V
   register: _ry_check
   changed_when: False
   failed_when: "_ry_check.stdout == ''"
+
+- name: show ansible_env
+  debug: var=ansible_env
+
+- set_fact: _rubyry_success="true"

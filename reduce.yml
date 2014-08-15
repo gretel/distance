@@ -7,17 +7,37 @@
     - ./vars/project.yml
 
   pre_tasks:
-    - shell: echo "running" | wall
+    - shell: echo "starting ansible run at {{ ansible_date_time.iso8601 }}" | wall
+
+    - name: gather ec2 facts
+      action: ec2_facts
+      tags:
+        - deploy
+        - packages
+        - sysctl
+        - varnish
+
+    - name: instance type
+      debug: var=ansible_ec2_instance_type
+
+    - debug: var=ansible_user_id
+    - debug: var=ansible_processor_cores
+    - debug: var=ansible_processor_count
+    - debug: var=ansible_processor_threads_per_core
 
   roles:
-    - { role: harden, tags: harden }
-    - { role: packages, tags: packages }
+    - { role: harden, tags: harden, sudo: true, when: ansible_system == 'Linux' }
+    - { role: sysctl, tags: sysctl, sudo: true, when: ansible_system == 'Linux' }
+    - { role: packages, tags: packages, sudo: true, when: ansible_pkg_mgr == 'yum' }
+
+    - { role: github, tags: github }
     - { role: rubyry, tags: rubyry }
     - { role: rubybuild, tags: rubybuild }
     - { role: rubygems, tags: rubygems }
-    - { role: deploy, tags: deploy }
-    - { role: github, tags: github }
+
     - { role: varnish, tags: varnish }
 
+    - { role: deploy, tags: deploy }
+
   post_tasks:
-    - shell: echo "done" | wall
+    - shell: echo "ansible run done at {{ ansible_date_time.iso8601 }}" | wall
