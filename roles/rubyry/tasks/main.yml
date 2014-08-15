@@ -1,6 +1,4 @@
 ---
-- debug: var="_rubyry_success"
-
 - name: git clone "{{ ry_repo }}"'
   git: repo={{ ry_repo }} dest={{ tmp_prefix }}/ry version=HEAD
   register: _ry_clone

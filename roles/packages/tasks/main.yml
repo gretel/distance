@@ -1,4 +1,10 @@
 ---
+- name: setting yum repo priority
+  ini_file: dest=/etc/yum/pluginconf.d/priorities.conf
+            section=main
+            option=enabled
+            value=0
+
 - name: remove packages
   yum: name={{ item }} state=absent
   with_items: "{{ absent_packages }}"
@@ -13,7 +19,6 @@
 - name: update all
   yum: name=* state=latest
   register: _yum_upgrade
-  tags: upgrade
 
 - name: install missing
   yum: name={{ item }} state=present

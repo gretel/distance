@@ -7,7 +7,8 @@
     - ./vars/project.yml
 
   pre_tasks:
-    - shell: echo "starting ansible run at {{ ansible_date_time.iso8601 }}" | wall
+    - shell: echo "starting deployment at {{ ansible_date_time.iso8601 }}" | wall
+      tags: deploy
 
     - name: gather ec2 facts
       action: ec2_facts
@@ -40,4 +41,7 @@
     - { role: deploy, tags: deploy }
 
   post_tasks:
-    - shell: echo "ansible run done at {{ ansible_date_time.iso8601 }}" | wall
+    - shell: echo "deployment done at {{ ansible_date_time.iso8601 }}" | wall
+      tags: deploy
+
+

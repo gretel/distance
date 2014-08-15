@@ -42,20 +42,3 @@
 
 - name: tmpfs options
   mount: name=/dev/shm src=tmpfs fstype=tmpfs opts=rw,noatime,nosuid,nodev,noexec state=present
-  tags: tmpfs
-
-- name: setting yum repo priority
-  ini_file: dest=/etc/yum/pluginconf.d/priorities.conf
-            section=main
-            option=enabled
-            value=1
-  when: ansible_pkg_mgr == 'yum'
-
-#- name: varnish | disable priorities
-#  lineinfile: dest=/etc/yum/pluginconf.d/priorities.conf
-#              state=present
-#              backrefs=yes
-#              regexp='^#?enabled = 1'
-#              line='enabled = 0'
-#  sudo: true
-

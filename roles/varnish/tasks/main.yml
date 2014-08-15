@@ -35,3 +35,4 @@
   service: name=varnish state=started
   sudo: true
   when: _varnish_check|success
+  tags: start_varnish

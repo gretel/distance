@@ -1,6 +1,7 @@
 ---
 yum_update: true
 yum_cleanup: true
+yum_priorities: false
 
 absent_packages:
   - ruby
