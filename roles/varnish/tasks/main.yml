@@ -1,45 +1,37 @@
 ---
-- name: varnish | add repository file
+- name: add repository file
   copy: src=varnish.repo
         dest=/etc/yum.repos.d/
         owner=root group=root mode=0644
   sudo: true
 
-#- name: varnish | enable repository
-#  ini_file: dest=/etc/yum.repos.d/varnish.repo
-#            section=varnish-4.0
-#            option=enabled
-#            value=1
-#  sudo: true
-
-- name: varnish | erase
+- name: erase package
   yum: name=varnish-* state=absent
-  sudo: True
+  sudo: true
   register: _yum_erase
   tags: remove
+  when: False
 
-- name: varnish | install missing
+- name: install package
   yum: name=varnish state=latest
-  sudo: True
+  sudo: true
   register: _yum_install
 
-- name: varnish | check
+- name: setup configuration
+  template:
+    src=etc_sysconfig_varnish.j2
+    dest=/etc/sysconfig/varnish
+    owner=root group=root mode=0640
+  sudo: true
+
+- name: check
   shell: varnishd -V
   environment:
     PATH: /usr/sbin
   register: _varnish_check
-  failed_when: not _varnish_check.stderr.find('varnish-4')
+  failed_when: _varnish_check.stderr.find('varnish-4') == -1
 
-- name: varnish | configuration template
-  template:
-    src=$repository_basedir/varnish/templates/varnish.default.j2
-    dest=/etc/default/varnish
-    owner=root group=root mode=0644
-  notify:
-    - varnish-restart
-  when: False
-
-- name: varnish | ensure daemon gets started
+- name: start service
   service: name=varnish state=started
-  when: False
-
+  sudo: true
+  when: _varnish_check|success
