@@ -1,17 +1,28 @@
 ---
-- name: clone
+- name: git clone {{ project_repo }}
   git: repo={{ project_repo }} dest={{ project_prefix }} version=HEAD
+  register: _deploy_clone
   tags: git
 
 - name: bundle install
-  command: "bundle install --deployment --without=development,test --binstubs --clean --retry 2 --path=vendor/bundle chdir={{ project_prefix }}"
-  environment:
-    RACK_ENV: production
+  shell: bundle install --deployment --without=development,test --binstubs --clean --retry 2 --path=vendor/bundle chdir={{ project_prefix }}
   register: _bundler
   changed_when: _bundler.stdout.find('It was installed into')
 
-- name: bundle check
-  command: "bundle check --no-color chdir={{ project_prefix }}"
-  register: _bundler_check
-  tags: bundler
-  failed_when: _bundler_check.rc == 127
+#- name: bundle check
+#  shell: bundle check --no-color chdir={{ project_prefix }}
+#  register: _bundler_check
+#  tags: bundler
+#  failed_when: _bundler_check.rc == 127
+
+- name: drop the pill
+  shell: bundle exec bluepill --no-privileged load production.pill chdir={{ project_prefix }}
+
+- name: drop the pill
+  shell: bundle exec bluepill --no-privileged restart rackup chdir={{ project_prefix }}
+
+#- flowdock: type=chat
+#            token=0b329f3743ce8357735fff016586b89e
+#            external_user_name=distance
+#            msg="deployment done"
+#            tags=dcie,tube,deploy
