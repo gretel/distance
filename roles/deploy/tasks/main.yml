@@ -1,31 +1,55 @@
 ---
+- name: stop running
+  shell: bundle exec bluepill --logfile {{ project_prefix }}/log/bluepill.log --no-privileged {{ project_name }} stop chdir={{ project_prefix }}
+  register: _bluepill_stop
+  changed_when: _bluepill_stop.stdout.find('Sent stop to')
+  ignore_errors: true
+
+- name: remove directory
+  file: path={{ project_prefix }} state=absent
+  when: _bluepill_stop|success
+  tags: clean
+
 - name: git clone {{ project_repo }}
   git: repo={{ project_repo }} dest={{ project_prefix }} version=HEAD
   register: _deploy_clone
-  tags: git
+
+- name: git revision
+  shell: cat .git/refs/heads/master chdir={{ project_prefix }}
+  register: _deploy_rev
+  failed_when: _deploy_rev.stdout == ''
+
+- name: store revision
+  set_fact: _deploy_rev={{ _deploy_rev.stdout }}
+  when: _deploy_rev|success
 
 - name: bundle install
   shell: bundle install --deployment --without=development,test --binstubs --clean --retry 2 --path=vendor/bundle chdir={{ project_prefix }}
   register: _bundle_install
   changed_when: _bundle_install.stdout.find('It was installed into')
 
-- name: bundle check
-  shell: bundle check --no-color chdir={{ project_prefix }}
-  register: _bundle_check
+#- name: bundle check
+#  shell: bundle check --no-color chdir={{ project_prefix }}
+#  register: _bundle_check
+
+- name: create directories
+  file: path={{ project_prefix }}/{{ item }} state=directory
+  with_items: "{{ create_dirs }}"
 
 - name: load pill
-  shell: bundle exec bluepill --no-privileged load {{ project_pill | default('production.pill') }} chdir={{ project_prefix }}
+  shell: bundle exec bluepill --logfile {{ project_prefix }}/log/bluepill.log --no-privileged load {{ project_pill }} chdir={{ project_prefix }}
   register: _bluepill_load
+  changed_when: _bluepill_load.stdout.find('Killing previous bluepilld')
 
 - name: choose the blue one
-  shell: bundle exec bluepill --no-privileged restart rackup chdir={{ project_prefix }}
+  shell: bundle exec bluepill --logfile {{ project_prefix }}/log/bluepill.log --no-privileged {{ project_name }} restart chdir={{ project_prefix }}
   register: _bluepill_restart
-  when: _bluepill_load|success
+  changed_when: _bluepill_restart.stdout.find('Sent restart to')
 
 - flowdock: type=chat
             token="{{ flowdock_token }}"
             external_user_name="{{ flowdock_user_name }}"
-            msg="deployment of {{ project_name }} done at {{ ansible_date_time.iso8601 }}"
+            msg="deployment of {{ project_name }} [{{ _deploy_rev.stdout }}] done at {{ ansible_date_time.iso8601 }}"
             tags="{{ project_name }},deploy,{{ ansible_date_time.date }}"
-            when="{{ flowdock_enable }} and _bluepill_load|success"
+  when: "{{ flowdock_enable }} and _bluepill_load|success"
 
