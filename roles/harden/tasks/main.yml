@@ -1,5 +1,5 @@
 ---
-- name: harden | remove users
+- name: remove users
   sudo: true
   user: name={{ item }} state=absent
   with_items:
@@ -12,7 +12,7 @@
     - proxy
     - uucp
 
-- name: harden | disable logins
+- name: disable logins
   user: name={{ item }} shell=/usr/sbin/nologin
   sudo: true
   with_items:
@@ -26,7 +26,7 @@
     - nobody
     - libuuid
 
-- name: harden | remove groups
+- name: remove groups
   sudo: true
   group: name={{ item }} state=absent
   with_items:
@@ -40,16 +40,16 @@
     - proxy
     - uucp
 
-- name: harden | root directory permissions
+- name: root directory permissions
   sudo: true
   file: dest=/root state=directory mode=700
 
-- name: harden | tmpfs options
+- name: tmpfs options
   sudo: true
   mount: name=/dev/shm src=tmpfs fstype=tmpfs opts=rw,noatime,nosuid,nodev,noexec state=present
   tags: tmpfs
 
-- name: harden | setting yum repo priority
+- name: setting yum repo priority
   sudo: true
   ini_file: dest=/etc/yum/pluginconf.d/priorities.conf
             section=main
