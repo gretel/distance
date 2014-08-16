@@ -21,10 +21,10 @@
     - name: instance type
       debug: var=ansible_ec2_instance_type
 
-    - debug: var=ansible_user_id
-    - debug: var=ansible_processor_cores
-    - debug: var=ansible_processor_count
-    - debug: var=ansible_processor_threads_per_core
+    #- debug: var=ansible_user_id
+    #- debug: var=ansible_processor_cores
+    #- debug: var=ansible_processor_count
+    #- debug: var=ansible_processor_threads_per_core
 
   roles:
     - { role: harden, tags: harden, sudo: true, when: ansible_system == 'Linux' }
