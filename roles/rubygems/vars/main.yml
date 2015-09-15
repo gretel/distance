@@ -2,6 +2,7 @@
 gem_wipe: false
 gem_update: true
 gem_cleanup: true
+gem_trust: true
 gem_wellness: false
 gem_update_flags: --env-shebang --no-document --wrappers
 gem_install_flags: --env-shebang --no-document --wrappers

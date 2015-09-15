@@ -28,3 +28,5 @@ present_packages:
   - openssl-devel
   - git
   - screen
+  - libxml2
+  - libxml2-devel

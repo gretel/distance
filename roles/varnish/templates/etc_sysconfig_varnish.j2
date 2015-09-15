@@ -12,7 +12,7 @@ NFILES=4096
 MEMLOCK=128
 
 # Maximum number of threads (for ulimit -u)
-NPROCS=1024
+NPROCS=512
 
 # Set this to 1 to make init script reload try to switch vcl without restart.
 RELOAD_VCL=0
@@ -21,4 +21,4 @@ DAEMON_OPTS="-a {{ ansible_default_ipv4.address | default ('') }}:80 \
 	-b 127.0.0.1:9292 \
 	-n reverse \
 	-u varnish -g varnish \
-	-s malloc,64M"
+	-s malloc,128M"

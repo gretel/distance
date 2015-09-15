@@ -14,8 +14,11 @@
   lineinfile: "dest=/root/.bashrc line='export PATH={{ local_prefix }}/bin:${PATH}'"
   sudo: true
 
-- name: adjust path for current user
+- name: adjust PATH
   lineinfile: "dest=~/.bashrc line='export PATH={{ local_prefix }}/bin:${PATH}'"
+
+- name: adjust LAN to UTF-8
+  lineinfile: "dest=~/.bashrc line='export LANG=en_US.UTF-8'"
 
 - name: enable ry for root
   lineinfile: "dest=/root/.bashrc line='eval $(ry setup)'"

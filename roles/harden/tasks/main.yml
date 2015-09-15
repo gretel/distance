@@ -38,3 +38,9 @@
 
 - name: tmpfs options
   mount: name=/dev/shm src=tmpfs fstype=tmpfs opts=rw,noatime,nosuid,nodev,noexec state=present
+
+- name: check bash (http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2014-7169)
+  shell: bash -c 'env x=\'() { :;}; echo vulnerable\' bash -c "echo this is a test"'
+  register: _check_bash
+  failed_when: _check_bash.stdout.find('vulnerable')
+  tags: cve

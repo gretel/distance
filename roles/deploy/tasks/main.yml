@@ -11,38 +11,33 @@
 
 - name: remove directory
   file: path={{ project_prefix }} state=absent
-  #when: _bluepill_stop|success
   when: false
   tags: clean
 
-#- name: previous revision
-#  debug: var="deploy_rev"
-#  ignore_errors: true
+- name: previous revision
+  debug: var="git_hash"
+  ignore_errors: true
 
 - name: git clone {{ project_repo }}
   git: repo={{ project_repo }} dest={{ project_prefix }} version=HEAD
   register: _deploy_clone
 
-- name: git revision
-  shell: cat .git/refs/heads/master chdir={{ project_prefix }}
-  register: _git_rev
-  failed_when: _git_rev.stdout == ''
+- name: git commit hash
+  shell: git log -1 --format="%H" chdir={{ project_prefix }}
+  register: _git_hash
+  failed_when: _git_hash.stdout == ''
   tags: rev
 
-#- name: store revision
-#  set_fact:
-#     deploy_rev: "{{ _git_rev.stdout }}"
-#  ignore_errors: true
-#  when: _git_rev|success
+- name: store commit hash
+  set_fact:
+     git_hash: "{{ _git_hash.stdout }}"
+  #ignore_errors: true
+  #when: _git_hash|success
 
 - name: bundle install
   shell: bundle install --deployment --without=development,test --binstubs --clean --retry 2 --path=vendor/bundle chdir={{ project_prefix }}
   register: _bundle_install
   changed_when: _bundle_install.stdout.find('It was installed into')
-
-#- name: bundle check
-#  shell: bundle check --no-color chdir={{ project_prefix }}
-#  register: _bundle_check
 
 - name: create directories
   file: path={{ project_prefix }}/{{ item }} state=directory
@@ -71,7 +66,7 @@
 - flowdock: type=chat
             token="{{ flowdock_token }}"
             external_user_name="{{ flowdock_user_name }}"
-            msg="{{ project_name }} [{{ _git_rev.stdout|truncate(7) }}] deployed at {{ ansible_date_time.iso8601 }}"
+            msg="{{ project_name }} [{{ _git_hash.stdout|truncate(7) }}] deployed at {{ ansible_date_time.iso8601 }}"
             tags="{{ project_name }},deploy,{{ ansible_date_time.date }}"
   when: "{{ flowdock_enable }} and _bluepill_restart|success"
 
