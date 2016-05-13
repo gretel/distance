@@ -1,17 +1,17 @@
 ---
-project_name: dcie-tube
+project_name: dummy
 
-project_repo: https://github.com/gretel/dcie-tube.git
+project_repo: https://github.com/gretel/dummy.git
 project_prefix: /home/ec2-user/deploy
 
 project_pill: production.pill
 
-ruby_version: 2.1.2
+ruby_version: 2.3.1
 
 tmp_prefix: /home/ec2-user/.tmp
 local_prefix: /home/ec2-user/.local
 cache_prefix: /home/ec2-user/.cache
 
 flowdock_enable: false
-flowdock_token: 0b329f3743ce8357735fff016586b89e
+flowdock_token: 123
 flowdock_user_name: deploy-bot

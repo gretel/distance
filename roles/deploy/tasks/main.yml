@@ -61,7 +61,7 @@
 #  register: _deploy_check
 #  tags: check
 #- action: fail
-#  when: "'dcie' not in {{ _deploy_check.content }}"
+#  when: "'dummy' not in {{ _deploy_check.content }}"
 
 - flowdock: type=chat
             token="{{ flowdock_token }}"
